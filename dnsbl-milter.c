@@ -61,8 +61,8 @@ struct mlfiPriv
 {
 	char *connectfrom;
 	uint32_t hostaddr;                             /* network byte order */
-        char *msgid;
-        char *envfrom;
+	char *msgid;
+	char *envfrom;
 	uint8_t check;
 	stamp_t stamp;
 };
@@ -78,23 +78,23 @@ static sfsistat mlfi_dnslcheck(SMFICTX *);
 
 struct smfiDesc smfilter =
 {
-        "dnsbl-milter",               /* filter name */
-        SMFI_VERSION,                 /* version code -- do not change */
-        SMFIF_ADDHDRS,                /* flags */
-        mlfi_connect,                 /* connection info filter */
-        NULL,                         /* SMTP HELO command filter */
-        mlfi_envfrom,                 /* envelope sender filter */
-        NULL,                         /* envelope recipient filter */
-        NULL,                         /* header filter */
-        NULL,                         /* end of header */
-        NULL,                         /* body block filter */
-        mlfi_eom,                     /* end of message */
-        mlfi_abort,                   /* message aborted */
-        mlfi_close,                   /* connection cleanup */
-        NULL,                         /* unknown SMTP commands */
-        mlfi_data,                    /* DATA command */
-        NULL,                         /* Once, at the start of each SMTP
-                                         connection */
+	"dnsbl-milter",               /* filter name */
+	SMFI_VERSION,                 /* version code -- do not change */
+	SMFIF_ADDHDRS,                /* flags */
+	mlfi_connect,                 /* connection info filter */
+	NULL,                         /* SMTP HELO command filter */
+	mlfi_envfrom,                 /* envelope sender filter */
+	NULL,                         /* envelope recipient filter */
+	NULL,                         /* header filter */
+	NULL,                         /* end of header */
+	NULL,                         /* body block filter */
+	mlfi_eom,                     /* end of message */
+	mlfi_abort,                   /* message aborted */
+	mlfi_close,                   /* connection cleanup */
+	NULL,                         /* unknown SMTP commands */
+	mlfi_data,                    /* DATA command */
+	NULL,                         /* Once, at the start of each SMTP
+					 connection */
 };
 
 static void usage(const char *);
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 	int c;
 	char *p;
 	char *oconn;
-        int setconn;
+	int setconn;
 	int len;
 	int ret;
 	uint8_t daemon;
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 
 	mlog(LOG_INFO, "Starting Sendmail %s filter '%s'", smfilter.xxfi_name,
 	     config.pname);
-        ret = smfi_main();
+	ret = smfi_main();
 	/* remove pid file */
 	pidf_destroy(pidf);
 	if (ret == MI_SUCCESS) {
@@ -334,11 +334,11 @@ $Id$\n");
 
 static void mlog(const int priority, const char *fmt, ...)
 {
-        char tbuf[28];
-        time_t t;
-        va_list ap;
+	char tbuf[28];
+	time_t t;
+	va_list ap;
 
-        va_start(ap, fmt);
+	va_start(ap, fmt);
 
 	/* if daemonize, then we log to syslog */
 	if (config.daemon)
@@ -352,7 +352,7 @@ static void mlog(const int priority, const char *fmt, ...)
 		fflush(stderr);
 	}
 
-        va_end(ap);
+	va_end(ap);
 }
 
 sfsistat mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR *hostaddr)
@@ -367,50 +367,50 @@ sfsistat mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR *hostaddr)
 		return SMFIS_ACCEPT;
 	}
 
-        /* allocate some private memory */
-        priv = malloc(sizeof *priv);
-        if (priv == NULL) {
-                mlog(LOG_ERR, "%s: %s: Memory allocation failed", hostname,
-                     "mlfi_connect()");
-                return SMFIS_TEMPFAIL;
-        }
-        bzero(priv, sizeof *priv);
+	/* allocate some private memory */
+	priv = malloc(sizeof *priv);
+	if (priv == NULL) {
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed", hostname,
+		     "mlfi_connect()");
+		return SMFIS_TEMPFAIL;
+	}
+	bzero(priv, sizeof *priv);
 
-        /* save the private data */
-        smfi_setpriv(ctx, priv);
+	/* save the private data */
+	smfi_setpriv(ctx, priv);
 
 	/* store hostname of the SMTP client */
 	priv->connectfrom = strdup(hostname);
-        if (priv->connectfrom == NULL) {
-                mlog(LOG_ERR, "%s: %s: Memory allocation failed", hostname,
-                     "mlfi_connect()");
-                return SMFIS_TEMPFAIL;
-        }
+	if (priv->connectfrom == NULL) {
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed", hostname,
+		     "mlfi_connect()");
+		return SMFIS_TEMPFAIL;
+	}
 
 	/* store hostaddr */
 	phostaddr = (struct sockaddr_in *) hostaddr;
 	priv->hostaddr = phostaddr->sin_addr.s_addr;
 
-        /* continue processing */
-        return SMFIS_CONTINUE;
+	/* continue processing */
+	return SMFIS_CONTINUE;
 }
 
 sfsistat mlfi_envfrom(SMFICTX *ctx, char **argv)
 {
-        struct mlfiPriv *priv = GETCONTEXT(ctx);
+	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
 	/* SMTP Authenticated. Skip DNS blacklist checks */
 	if (smfi_getsymval(ctx, "{auth_type}") != NULL)
 		return SMFIS_ACCEPT;
 
-        /* store message ID */
-        priv->msgid = strdup(smfi_getsymval(ctx, "{i}"));
-        if (priv->msgid == NULL) {
-                mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+	/* store message ID */
+	priv->msgid = strdup(smfi_getsymval(ctx, "{i}"));
+	if (priv->msgid == NULL) {
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
 		     priv->connectfrom, "mlfi_envfrom()");
-                mlfi_cleanup(ctx);
-                return SMFIS_TEMPFAIL;
-        }
+		mlfi_cleanup(ctx);
+		return SMFIS_TEMPFAIL;
+	}
 
 	/* store sender's address */
 	priv->envfrom = strdup(argv[0]);
@@ -435,7 +435,7 @@ sfsistat mlfi_envfrom(SMFICTX *ctx, char **argv)
 
 sfsistat mlfi_eom(SMFICTX *ctx)
 {
-        struct mlfiPriv *priv = GETCONTEXT(ctx);
+	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
 	switch (priv->stamp) {
 	case STAMP_PASSED:
@@ -457,28 +457,28 @@ sfsistat mlfi_eom(SMFICTX *ctx)
 
 sfsistat mlfi_abort(SMFICTX *ctx)
 {
-        return mlfi_cleanup(ctx);
+	return mlfi_cleanup(ctx);
 }
 
 sfsistat mlfi_close(SMFICTX *ctx)
 {
-        struct mlfiPriv *priv = GETCONTEXT(ctx);
+	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
-        if (priv == NULL)
-                return SMFIS_CONTINUE;
+	if (priv == NULL)
+		return SMFIS_CONTINUE;
 
-        /* mlfi_connectfrom() */
-        if (priv->connectfrom != NULL) {
-                free(priv->connectfrom);
-                priv->connectfrom = NULL;
-        }
+	/* mlfi_connectfrom() */
+	if (priv->connectfrom != NULL) {
+		free(priv->connectfrom);
+		priv->connectfrom = NULL;
+	}
 
-        free(priv);
-        priv = NULL;
-        smfi_setpriv(ctx, NULL);
+	free(priv);
+	priv = NULL;
+	smfi_setpriv(ctx, NULL);
 
-        /* continue processing */
-        return SMFIS_CONTINUE;
+	/* continue processing */
+	return SMFIS_CONTINUE;
 }
 
 sfsistat mlfi_data(SMFICTX *ctx)
@@ -488,30 +488,30 @@ sfsistat mlfi_data(SMFICTX *ctx)
 	if (priv->check)
 		return mlfi_dnslcheck(ctx);
 
-        /* continue processing */
-        return SMFIS_CONTINUE;
+	/* continue processing */
+	return SMFIS_CONTINUE;
 }
 
 static sfsistat mlfi_cleanup(SMFICTX *ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
-        if (priv == NULL)
-                return SMFIS_CONTINUE;
+	if (priv == NULL)
+		return SMFIS_CONTINUE;
 
-        /* mlfi_envfrom() */
-        if (priv->msgid != NULL) {
-                free(priv->msgid);
-                priv->msgid = NULL;
-        }
+	/* mlfi_envfrom() */
+	if (priv->msgid != NULL) {
+		free(priv->msgid);
+		priv->msgid = NULL;
+	}
 
-        if (priv->envfrom != NULL) {
-                free(priv->envfrom);
-                priv->envfrom = NULL;
-        }
+	if (priv->envfrom != NULL) {
+		free(priv->envfrom);
+		priv->envfrom = NULL;
+	}
 
-        /* continue processing */
-        return SMFIS_CONTINUE;
+	/* continue processing */
+	return SMFIS_CONTINUE;
 }
 
 static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
@@ -626,39 +626,39 @@ static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
 static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,
 			const uint8_t d, const char *dnsl)
 {
-        int len;
-        char *name;
-        int err;
-        struct addrinfo *res = NULL;
+	int len;
+	char *name;
+	int err;
+	struct addrinfo *res = NULL;
 
-        /* "ddd.ccc.bbb.aaa" + '.' + dnsl + '.' + '\0' */
-        len = 15 + 1 + strlen(dnsl) + 1 + 1;
-        name = malloc(len);
-        if (name == NULL) {
+	/* "ddd.ccc.bbb.aaa" + '.' + dnsl + '.' + '\0' */
+	len = 15 + 1 + strlen(dnsl) + 1 + 1;
+	name = malloc(len);
+	if (name == NULL) {
 		mlog(LOG_ERR, "%s: Memory allocation failed", "dns_check()");
 		return DNSL_FAIL;
-        }
+	}
 
 	snprintf(name, len, "%u.%u.%u.%u.%s.", d, c, b, a, dnsl);
-        err = getaddrinfo(name, NULL, NULL, &res);
-        free(name);
-        name = NULL;
+	err = getaddrinfo(name, NULL, NULL, &res);
+	free(name);
+	name = NULL;
 
 	if (res != NULL)
 		freeaddrinfo(res);
 
-        switch (err) {
-        case 0: /* successful lookup */
+	switch (err) {
+	case 0: /* successful lookup */
 		return DNSL_EXIST;
-                break;
-        case EAI_AGAIN:
-        case EAI_MEMORY:
-                return DNSL_FAIL;
-                break;
-        default:
-                return DNSL_NEXIST;
-                break;
-        }
+		break;
+	case EAI_AGAIN:
+	case EAI_MEMORY:
+		return DNSL_FAIL;
+		break;
+	default:
+		return DNSL_NEXIST;
+		break;
+	}
 }
 
 
@@ -693,8 +693,8 @@ static int list_add(struct listNode **listp, const char *dnsl,
 		     "strdup(msg)");
 		free(node->dnsl);
 		free(node);
-                node = NULL;
-                return 1;
+		node = NULL;
+		return 1;
 	}
 	node->next = NULL;
 

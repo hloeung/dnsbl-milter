@@ -57,10 +57,9 @@ static int list_free(struct listNode **);
 #define STAMP_SKIPPED     2
 typedef uint8_t stamp_t;
 
-struct mlfiPriv
-{
+struct mlfiPriv {
 	char *connectfrom;
-	uint32_t hostaddr;                             /* network byte order */
+	uint32_t hostaddr;	/* network byte order */
 	char *msgid;
 	char *envfrom;
 	uint8_t check;
@@ -76,25 +75,24 @@ sfsistat mlfi_data(SMFICTX *);
 static sfsistat mlfi_cleanup(SMFICTX *);
 static sfsistat mlfi_dnslcheck(SMFICTX *);
 
-struct smfiDesc smfilter =
-{
-	"dnsbl-milter",               /* filter name */
-	SMFI_VERSION,                 /* version code -- do not change */
-	SMFIF_ADDHDRS,                /* flags */
-	mlfi_connect,                 /* connection info filter */
-	NULL,                         /* SMTP HELO command filter */
-	mlfi_envfrom,                 /* envelope sender filter */
-	NULL,                         /* envelope recipient filter */
-	NULL,                         /* header filter */
-	NULL,                         /* end of header */
-	NULL,                         /* body block filter */
-	mlfi_eom,                     /* end of message */
-	mlfi_abort,                   /* message aborted */
-	mlfi_close,                   /* connection cleanup */
-	NULL,                         /* unknown SMTP commands */
-	mlfi_data,                    /* DATA command */
-	NULL,                         /* Once, at the start of each SMTP
-					 connection */
+struct smfiDesc smfilter = {
+	"dnsbl-milter",		/* filter name */
+	SMFI_VERSION,		/* version code -- do not change */
+	SMFIF_ADDHDRS,		/* flags */
+	mlfi_connect,		/* connection info filter */
+	NULL,			/* SMTP HELO command filter */
+	mlfi_envfrom,		/* envelope sender filter */
+	NULL,			/* envelope recipient filter */
+	NULL,			/* header filter */
+	NULL,			/* end of header */
+	NULL,			/* body block filter */
+	mlfi_eom,		/* end of message */
+	mlfi_abort,		/* message aborted */
+	mlfi_close,		/* connection cleanup */
+	NULL,			/* unknown SMTP commands */
+	mlfi_data,		/* DATA command */
+	NULL,			/* Once, at the start of each SMTP
+				   connection */
 };
 
 static void usage(const char *);
@@ -122,14 +120,14 @@ int main(int argc, char **argv)
 	const char *opts = "b:D:dg:ht:u:";
 #ifdef HAS_LONGOPT
 	static const struct option lopt[] = {
-		{"bind",      1, 0, 'b'},
-		{"debug",     1, 0, 'D'},
+		{"bind", 1, 0, 'b'},
+		{"debug", 1, 0, 'D'},
 		{"daemonize", 0, 0, 'd'},
-		{"group",     1, 0, 'g'},
-		{"help",      0, 0, 'h'},
-		{"timeout",   1, 0, 't'},
-		{"user",      1, 0, 'u'},
-		{ NULL,       0, 0,  0 }
+		{"group", 1, 0, 'g'},
+		{"help", 0, 0, 'h'},
+		{"timeout", 1, 0, 't'},
+		{"user", 1, 0, 'u'},
+		{NULL, 0, 0, 0}
 	};
 #endif
 	int c;
@@ -162,23 +160,25 @@ int main(int argc, char **argv)
 
 	while ((c = getopt_long(argc, argv, opts, lopt, NULL)) != -1) {
 
-		switch(c) {
+		switch (c) {
 
-		case 'b':  /* bind address/socket */
+		case 'b':	/* bind address/socket */
 			if (setconn) {
-				mlog(LOG_ERR, "Bind address/socket already provided, ignoring");
+				mlog(LOG_ERR,
+				     "Bind address/socket already provided, ignoring");
 				break;
 			}
 
 			if ((optarg == NULL) || (*optarg == '\0')) {
-				mlog(LOG_ERR, "No bind address/socket provided");
+				mlog(LOG_ERR,
+				     "No bind address/socket provided");
 				usage(config.pname);
 				exit(EX_USAGE);
 			}
 
-			if ((strncmp(optarg, "unix:",  5) == 0)  ||
+			if ((strncmp(optarg, "unix:", 5) == 0) ||
 			    (strncmp(optarg, "local:", 6) == 0) ||
-			    (strncmp(optarg, "inet:",  5) == 0) ||
+			    (strncmp(optarg, "inet:", 5) == 0) ||
 			    (strncmp(optarg, "inet6:", 6) == 0)) {
 				oconn = optarg;
 				setconn = 1;
@@ -199,7 +199,8 @@ int main(int argc, char **argv)
 
 		case 'D':
 			if ((optarg == NULL) || (*optarg == '\0')) {
-				mlog(LOG_ERR, "No debugging level provided");
+				mlog(LOG_ERR,
+				     "No debugging level provided");
 				usage(config.pname);
 				exit(EX_USAGE);
 			}
@@ -241,7 +242,7 @@ int main(int argc, char **argv)
 			usr = optarg;
 			break;
 
-		case 'h':  /* help */
+		case 'h':	/* help */
 		default:
 			usage(config.pname);
 			exit(EX_USAGE);
@@ -265,8 +266,10 @@ int main(int argc, char **argv)
 	}
 
 	/* List of blacklists to use */
-	list_add(&blacklist, "bl.spamcop.net", "Listed on SpamCop. For more information, see http://spamcop.net/w3m?action=checkblock&ip=");
-	list_add(&blacklist, "zen.spamhaus.org", "Listed on Spamhaus. For more information, see http://www.spamhaus.org/query/bl?ip=");
+	list_add(&blacklist, "bl.spamcop.net",
+		 "Listed on SpamCop. For more information, see http://spamcop.net/w3m?action=checkblock&ip=");
+	list_add(&blacklist, "zen.spamhaus.org",
+		 "Listed on Spamhaus. For more information, see http://www.spamhaus.org/query/bl?ip=");
 
 	/* List of whitelists to use */
 	list_add(&whitelist, "list.dnswl.org", "http://www.dnswl.org");
@@ -281,8 +284,8 @@ int main(int argc, char **argv)
 	/* write pid file */
 	pidf_create(pidf);
 
-	mlog(LOG_INFO, "Starting Sendmail %s filter '%s'", smfilter.xxfi_name,
-	     config.pname);
+	mlog(LOG_INFO, "Starting Sendmail %s filter '%s'",
+	     smfilter.xxfi_name, config.pname);
 	ret = smfi_main();
 	/* remove pid file */
 	pidf_destroy(pidf);
@@ -290,7 +293,8 @@ int main(int argc, char **argv)
 		mlog(LOG_INFO, "Stopping Sendmail %s filter '%s'",
 		     smfilter.xxfi_name, config.pname);
 	} else {
-		mlog(LOG_ERR, "Abnormal termination of Sendmail %s filter '%s': %d",
+		mlog(LOG_ERR,
+		     "Abnormal termination of Sendmail %s filter '%s': %d",
 		     smfilter.xxfi_name, config.pname, ret);
 	}
 
@@ -355,7 +359,7 @@ static void mlog(const int priority, const char *fmt, ...)
 	va_end(ap);
 }
 
-sfsistat mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR *hostaddr)
+sfsistat mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
 	struct mlfiPriv *priv;
 	struct sockaddr_in *phostaddr;
@@ -395,7 +399,7 @@ sfsistat mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR *hostaddr)
 	return SMFIS_CONTINUE;
 }
 
-sfsistat mlfi_envfrom(SMFICTX *ctx, char **argv)
+sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
@@ -415,15 +419,16 @@ sfsistat mlfi_envfrom(SMFICTX *ctx, char **argv)
 	/* store sender's address */
 	priv->envfrom = strdup(argv[0]);
 	if (priv->envfrom == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed", priv->msgid,
-		     "mlfi_envfrom()");
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+		     priv->msgid, "mlfi_envfrom()");
 		mlfi_cleanup(ctx);
 		return SMFIS_TEMPFAIL;
 	}
 
 	/* null-envelope sender address, defer DNS checks till mlfi_data() */
 	if (strncmp(argv[0], "<>\0", 3) == 0) {
-		mlog(LOG_DEBUG, "%s: Null-envelope sender address, deferring",
+		mlog(LOG_DEBUG,
+		     "%s: Null-envelope sender address, deferring",
 		     priv->msgid);
 		priv->check = 1;
 		return SMFIS_CONTINUE;
@@ -433,7 +438,7 @@ sfsistat mlfi_envfrom(SMFICTX *ctx, char **argv)
 	return mlfi_dnslcheck(ctx);
 }
 
-sfsistat mlfi_eom(SMFICTX *ctx)
+sfsistat mlfi_eom(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
@@ -455,12 +460,12 @@ sfsistat mlfi_eom(SMFICTX *ctx)
 	return mlfi_cleanup(ctx);
 }
 
-sfsistat mlfi_abort(SMFICTX *ctx)
+sfsistat mlfi_abort(SMFICTX * ctx)
 {
 	return mlfi_cleanup(ctx);
 }
 
-sfsistat mlfi_close(SMFICTX *ctx)
+sfsistat mlfi_close(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
@@ -481,7 +486,7 @@ sfsistat mlfi_close(SMFICTX *ctx)
 	return SMFIS_CONTINUE;
 }
 
-sfsistat mlfi_data(SMFICTX *ctx)
+sfsistat mlfi_data(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
@@ -492,7 +497,7 @@ sfsistat mlfi_data(SMFICTX *ctx)
 	return SMFIS_CONTINUE;
 }
 
-static sfsistat mlfi_cleanup(SMFICTX *ctx)
+static sfsistat mlfi_cleanup(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
@@ -514,7 +519,7 @@ static sfsistat mlfi_cleanup(SMFICTX *ctx)
 	return SMFIS_CONTINUE;
 }
 
-static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
+static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 	struct listNode *blp;
@@ -524,21 +529,21 @@ static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
 	int len;
 	char *msg;
 
-	uint8_t a =  priv->hostaddr & 0x000000ff;
+	uint8_t a = priv->hostaddr & 0x000000ff;
 	uint8_t b = (priv->hostaddr & 0x0000ff00) >> 8;
 	uint8_t c = (priv->hostaddr & 0x00ff0000) >> 16;
 	uint8_t d = (priv->hostaddr & 0xff000000) >> 24;
 
 	switch (a) {
 
-	/* Loopback */
+		/* Loopback */
 	case 127:
 		priv->stamp = STAMP_SKIPPED;
 		return SMFIS_CONTINUE;
 		break;
 
-	/* RFC1910 (Private networks) */
-	case 10: /* Class A (10.0.0.0/8) */
+		/* RFC1910 (Private networks) */
+	case 10:		/* Class A (10.0.0.0/8) */
 		priv->stamp = STAMP_SKIPPED;
 		return SMFIS_CONTINUE;
 		break;
@@ -565,11 +570,12 @@ static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
 	blp = blacklist;
 	blisted = 0;
 	while ((blp != NULL) && (blisted == 0)) {
-		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.", priv->msgid,
-		     d, c, b, a, blp->dnsl);
+		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
+		     priv->msgid, d, c, b, a, blp->dnsl);
 
 		if (dns_check(a, b, c, d, blp->dnsl) == DNSL_EXIST) {
-			mlog(LOG_INFO, "%s: %s [%u.%u.%u.%u] is blacklisted on %s",
+			mlog(LOG_INFO,
+			     "%s: %s [%u.%u.%u.%u] is blacklisted on %s",
 			     priv->msgid, priv->connectfrom, a, b, c, d,
 			     blp->dnsl);
 			blisted = 1;
@@ -586,11 +592,12 @@ static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
 	wlp = whitelist;
 	wlisted = 0;
 	while ((wlp != NULL) && (wlisted == 0)) {
-		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.", priv->msgid,
-		     d, c, b, a, wlp->dnsl);
+		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
+		     priv->msgid, d, c, b, a, wlp->dnsl);
 
 		if (dns_check(a, b, c, d, wlp->dnsl) == DNSL_EXIST) {
-			mlog(LOG_INFO, "%s: %s [%u.%u.%u.%u] is whitelisted on %s",
+			mlog(LOG_INFO,
+			     "%s: %s [%u.%u.%u.%u] is whitelisted on %s",
 			     priv->msgid, priv->connectfrom, a, b, c, d,
 			     wlp->dnsl);
 			wlisted = 1;
@@ -605,15 +612,16 @@ static sfsistat mlfi_dnslcheck(SMFICTX *ctx)
 
 	/* "Client address aaa.bbb.ccc.ddd rejected. " + msg + "aaa.bbb.ccc.ddd"
 	   + '\0' */
-	len =  42 + strlen(blp->msg) + 15 + 1;
+	len = 42 + strlen(blp->msg) + 15 + 1;
 	msg = malloc(len);
 	if (msg == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed", priv->msgid,
-		     "mlfi_dnslcheck()");
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+		     priv->msgid, "mlfi_dnslcheck()");
 		smfi_setreply(ctx, "550", "5.7.1", blp->msg);
 	} else {
-		snprintf(msg, len, "Client address %u.%u.%u.%u rejected. %s%u.%u.%u.%u",
-			a, b, c, d, blp->msg, a, b, c, d);
+		snprintf(msg, len,
+			 "Client address %u.%u.%u.%u rejected. %s%u.%u.%u.%u",
+			 a, b, c, d, blp->msg, a, b, c, d);
 		smfi_setreply(ctx, "550", "5.7.1", msg);
 		free(msg);
 		msg = NULL;
@@ -635,7 +643,8 @@ static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,
 	len = 15 + 1 + strlen(dnsl) + 1 + 1;
 	name = malloc(len);
 	if (name == NULL) {
-		mlog(LOG_ERR, "%s: Memory allocation failed", "dns_check()");
+		mlog(LOG_ERR, "%s: Memory allocation failed",
+		     "dns_check()");
 		return DNSL_FAIL;
 	}
 
@@ -648,7 +657,7 @@ static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,
 		freeaddrinfo(res);
 
 	switch (err) {
-	case 0: /* successful lookup */
+	case 0:		/* successful lookup */
 		return DNSL_EXIST;
 		break;
 	case EAI_AGAIN:
@@ -670,15 +679,15 @@ static int list_add(struct listNode **listp, const char *dnsl,
 
 	node = malloc(sizeof(struct listNode));
 	if (node == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed", "list_add()",
-			"malloc(node)");
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+		     "list_add()", "malloc(node)");
 		return 1;
 	}
 
 	node->dnsl = strdup(dnsl);
 	if (node->dnsl == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed", "list_add()",
-		     "strdup(dnsl)");
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+		     "list_add()", "strdup(dnsl)");
 		free(node);
 		node = NULL;
 		return 1;
@@ -689,8 +698,8 @@ static int list_add(struct listNode **listp, const char *dnsl,
 	else
 		node->msg = strdup(msg);
 	if (node->msg == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed", "list_add()",
-		     "strdup(msg)");
+		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+		     "list_add()", "strdup(msg)");
 		free(node->dnsl);
 		free(node);
 		node = NULL;
@@ -709,7 +718,7 @@ static int list_add(struct listNode **listp, const char *dnsl,
 
 	p->next = node;
 
-success:
+      success:
 	mlog(LOG_DEBUG, "Added to list %s %s", dnsl, msg);
 	return 0;
 }
@@ -765,7 +774,7 @@ static void daemonize(void)
 static int drop_privs(const char *usr, const char *grp)
 {
 	struct passwd *pw = NULL;
-	struct group  *gr = NULL;
+	struct group *gr = NULL;
 
 	/*
 	 * there is only one thread yet, so it is safe to use non reentrant
@@ -790,7 +799,8 @@ static int drop_privs(const char *usr, const char *grp)
 		}
 
 		if (setgid(gr->gr_gid) != 0) {
-			mlog(LOG_ERR, "Unable to setgid to %d", gr->gr_gid);
+			mlog(LOG_ERR, "Unable to setgid to %d",
+			     gr->gr_gid);
 			return -1;
 		}
 	}
@@ -804,7 +814,8 @@ static int drop_privs(const char *usr, const char *grp)
 		}
 
 		if (setuid(pw->pw_uid) != 0) {
-			mlog(LOG_ERR, "Unable to setuid to %d", pw->pw_uid);
+			mlog(LOG_ERR, "Unable to setuid to %d",
+			     pw->pw_uid);
 			return -1;
 		}
 	}
@@ -830,4 +841,3 @@ static void pidf_destroy(const char *pidf)
 {
 	unlink(pidf);
 }
-

@@ -331,7 +331,7 @@ Usage: %s -b [bind address/socket] [-dh] [-D [debug level]]\n\
 \n\
     -h              This help screen\n");
 
-	printf("\nReport bugs to Haw Loeung <haw.loeung@tpg.com.au>\n\
+	printf("\nReport bugs to Haw Loeung <hloeung@users.sourceforge.net>\n\
 $Id$\n");
 
 }

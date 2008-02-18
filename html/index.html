@@ -20,16 +20,26 @@
 	<br />
 	<br />
 
-	<h2><b>F</b>eatures</h2>
+	<h2><a name="Features"><b>F</b>eatures</a></h2>
 	<ul>
 	<li>supports SMTP authentication - that is, users can bypass the blacklist listing by authenticating via SMTP AUTH<br /><br /></li>
 	<li>supports sender address verification or sender callbacks (see <a href="http://www.milter.info/sendmail/milter-sender">milter-sender</a>) - most SMTP callbacks are made using the null-envelope sender address. When we see this, we defer our blacklist checks until the SMTP DATA stage (or xxfi_data() callback in Sendmail 8.14.0+'s <a href="https://www.milter.org/developers/api/index">milter API</a>)<br /><br /></li>
 	<li>customizable blacklists (defaults are <a href="http://www.spamcop.net">SpamCop</a> and <a href="http://www.spamhaus.org">Spamhaus</a>) and whitelists (default is to use <a href="http://www.dnswl.org">DNSWL.org</a>) - we chose these blacklists and whitelists due to various documents online comparing some of the popular blacklists. See links provided in the "Links" section<br /><br /></li>
+	<li>. . . and more. . .</li>
+	</ul>
+	<br />
+
+	<h2><a name="Why"><b>W</b>hy?</a></h2>
+So why choose dnsbl-milter over Sendmail's builtin <a href="http://www.sendmail.org/m4/features.html#dnsbl">dnsbl/enhdnsbl feature</a>?
+	<ul>
+	<li>allows use of DNS whitelists to override DNS blacklist listings<br /><br /></li>
+	<li>allows more control as to what IPs/ports (daemon_options) we want DNSBL filtering<br /><br /></li>
+	<li>relay lines does not override listing (<a href="http://www.five-ten-sg.com/dnsbl/rn01re01.html#access.1">See 510 Software Group's explanation</a>)<br /><br /></li>
 	<li>. . . and more to come</li>
 	</ul>
 	<br />
 
-	<h2><b>I</b>n action</h2>
+	<h2><a name="InAction"><b>I</b>n action</a></h2>
 	<div id="dnsbl-milter_in_action" align="center">
 		<a href="/image-maillogs.html"><img src="/images/maillogs-small.png" alt="dnsbl-milter in action #1" border="0" /></a>
 		&nbsp;&nbsp;
@@ -40,7 +50,7 @@
 	<br />
 	<br />
 
-	<h2><b>L</b>atest stable release</h2>
+	<h2><a name="Download"><b>L</b>atest stable release</a></h2>
 	<a href="http://prdownloads.sourceforge.net/dnsbl-milter/dnsbl-milter-1.0.tar.gz">1.0</a> (for Sendmail 8.14.0+)<br />
 	<a href="http://prdownloads.sourceforge.net/dnsbl-milter/dnsbl-milter-1.0.pre-Sendmail.8.14.tar.gz">1.0</a> (pre Sendmail 8.14.0)<br />
 	<br />
@@ -48,12 +58,31 @@
 	<br />
 	<br />
 
-	<h2><b>S</b>ource code access</h2>
+	<h2><a name="Source"><b>S</b>ource code access</a></h2>
 	<a href="http://dnsbl-milter.svn.sourceforge.net/viewvc/dnsbl-milter">Subversion SVN</a><br />
 	<br />
 	<br />
 
-	<h2><b>P</b>roject page</h2>
+	<h2><a name="Installation"><b>I</b>nstallation</a></h2>
+	<ol>
+	<li>check source, make sure DNSBLs and DNSWLs are the ones you want. By default, we're using SpamCop, Spamhaus and DNSWL.org<br /><br /></li>
+	<li>compile source<br />
+	<br /># make<br /><br /></li>
+	<li>install compiled program<br />
+	<br /># make install<br /><br /></li>
+	<li>add something like the line below to sendmail.mc file:<br />
+	<br />INPUT_MAIL_FILTER(`dnsbl-milter', `S=unix:/var/run/milter/dnsbl-milter.sock, T=C:5m;S:20s;R:5m;E:10m, F=T')dnl<br /><br /></br /></li>
+	<li>add "dnsbl-milter" to the "InputMailFilters" parameter in DAEMON_OPTIONS<br /></br /><br /></li>
+	<li>generate new sendmail.cf file from sendmail.mc<br /><br /></li>
+	<li>run dnsbl-milter manually or use the init.d script provided in the source repository.<br />
+	<br /># /usr/local/sbin/dnsbl-milter --user milter --group milter --bind unix:/var/run/milter/dnsbl-milter.sock --daemon<br /></br /><br /></li>
+	</ol>
+	That's it. Watch the logs and watch your spam drop.
+	<br />
+	<br />
+	<br />
+
+	<h2><a name="Project"><b>P</b>roject page</a></h2>
 	<a href="http://sourceforge.net/projects/dnsbl-milter">http://sourceforge.net/projects/dnsbl-milter</a><br />
 	Report bugs, post patches, request new features, get support. . .<br />
 	<br />
@@ -65,7 +94,7 @@
 	<br />
 	<br />
 
-	<h2><b>L</b>inks</h2>
+	<h2><a name="Links"><b>L</b>inks</a></h2>
 	<a href="http://www.opus1.com/www/whitepapers/antispamfeb2007.pdf">http://www.opus1.com/www/whitepapers/antispamfeb2007.pdf</a><br />
 	<a href="http://www.spamhaus.org/effective_filtering.html">http://www.spamhaus.org/effective_filtering.html</a><br />
 	<a href="http://isc.sans.org/diary.html?storyid=3194">http://isc.sans.org/diary.html?storyid=3194</a><br />

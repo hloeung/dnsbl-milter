@@ -67,15 +67,15 @@ So why choose dnsbl-milter over Sendmail's builtin <a href="http://www.sendmail.
 	<ol>
 	<li>check source, make sure DNSBLs and DNSWLs are the ones you want. By default, we're using SpamCop, Spamhaus and DNSWL.org<br /><br /></li>
 	<li>compile source<br />
-	<br /># make<br /><br /></li>
+	<br /># <b>make</b><br /><br /></li>
 	<li>install compiled program<br />
-	<br /># make install<br /><br /></li>
+	<br /># <b>make install</b><br /><br /></li>
 	<li>add something like the line below to sendmail.mc file:<br />
-	<br />INPUT_MAIL_FILTER(`dnsbl-milter', `S=unix:/var/run/milter/dnsbl-milter.sock, T=C:5m;S:20s;R:5m;E:10m, F=T')dnl<br /><br /></br /></li>
-	<li>add "dnsbl-milter" to the "InputMailFilters" parameter in DAEMON_OPTIONS<br /></br /><br /></li>
+	<br />INPUT_MAIL_FILTER(`dnsbl-milter', `S=unix:/var/run/milter/dnsbl-milter.sock, T=C:5m;S:20s;R:5m;E:10m, F=T')dnl<br /><br /></li>
+	<li>add "dnsbl-milter" to the "InputMailFilters" parameter in DAEMON_OPTIONS<br /><br /></li>
 	<li>generate new sendmail.cf file from sendmail.mc<br /><br /></li>
 	<li>run dnsbl-milter manually or use the init.d script provided in the source repository.<br />
-	<br /># /usr/local/sbin/dnsbl-milter --user milter --group milter --bind unix:/var/run/milter/dnsbl-milter.sock --daemon<br /></br /><br /></li>
+	<br /># <b>/usr/local/sbin/dnsbl-milter --user milter --group milter --bind unix:/var/run/milter/dnsbl-milter.sock --daemon</b><br /><br /></li>
 	</ol>
 	That's it. Watch the logs and watch your spam drop.
 	<br />
@@ -117,6 +117,7 @@ So why choose dnsbl-milter over Sendmail's builtin <a href="http://www.sendmail.
 		<a href="http://validator.w3.org/check?uri=referer"><img src="http://www.w3.org/Icons/valid-xhtml10-blue" alt="Valid XHTML 1.0 Transitional" height="31" width="88" border="0" /></a>
 		<br />
 	<h5>Proud to be another SourceForge project</h5>
+$Id$
 	</div>
 	<br />
 

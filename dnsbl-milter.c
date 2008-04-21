@@ -10,6 +10,7 @@
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
 #include <fcntl.h>
@@ -255,6 +256,7 @@ int main(int argc, char **argv)
 		usage(config.pname);
 		exit(EX_USAGE);
 	}
+
 	if (smfi_setconn(oconn) == MI_FAILURE) {
 		mlog(LOG_ERR, "smfi_setconn() failed");
 		exit(EX_UNAVAILABLE);
@@ -274,9 +276,8 @@ int main(int argc, char **argv)
 	/* List of whitelists to use */
 	list_add(&whitelist, "list.dnswl.org", "http://www.dnswl.org");
 
-	if (usr || grp)
-		if (drop_privs(usr, grp) != 0)
-			exit(EX_TEMPFAIL);
+	if ((usr || grp) && drop_privs(usr, grp))
+		exit(EX_TEMPFAIL);
 
 	if (daemon)
 		daemonize();
@@ -427,9 +428,11 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 
 	/* null-envelope sender address, defer DNS checks till mlfi_data() */
 	if (strncmp(argv[0], "<>\0", 3) == 0) {
+#ifdef DEBUG
 		mlog(LOG_DEBUG,
 		     "%s: Null-envelope sender address, deferring",
 		     priv->msgid);
+#endif
 		priv->check = 1;
 		return SMFIS_CONTINUE;
 	}
@@ -570,8 +573,10 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	blp = blacklist;
 	blisted = 0;
 	while ((blp != NULL) && (blisted == 0)) {
+#ifdef DEBUG
 		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
 		     priv->msgid, d, c, b, a, blp->dnsl);
+#endif
 
 		if (dns_check(a, b, c, d, blp->dnsl) == DNSL_EXIST) {
 			mlog(LOG_INFO,
@@ -592,8 +597,10 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	wlp = whitelist;
 	wlisted = 0;
 	while ((wlp != NULL) && (wlisted == 0)) {
+#ifdef DEBUG
 		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
 		     priv->msgid, d, c, b, a, wlp->dnsl);
+#endif
 
 		if (dns_check(a, b, c, d, wlp->dnsl) == DNSL_EXIST) {
 			mlog(LOG_INFO,
@@ -610,9 +617,9 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 		return SMFIS_CONTINUE;
 	}
 
-	/* "Client address aaa.bbb.ccc.ddd rejected. " + msg + "aaa.bbb.ccc.ddd"
+	/* "Client address [aaa.bbb.ccc.ddd] blocked. " + msg + "aaa.bbb.ccc.ddd"
 	   + '\0' */
-	len = 42 + strlen(blp->msg) + 15 + 1;
+	len = 43 + strlen(blp->msg) + 15 + 1;
 	msg = malloc(len);
 	if (msg == NULL) {
 		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
@@ -620,7 +627,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 		smfi_setreply(ctx, "550", "5.7.1", blp->msg);
 	} else {
 		snprintf(msg, len,
-			 "Client address %u.%u.%u.%u rejected. %s%u.%u.%u.%u",
+			 "Client address [%u.%u.%u.%u] blocked. %s%u.%u.%u.%u",
 			 a, b, c, d, blp->msg, a, b, c, d);
 		smfi_setreply(ctx, "550", "5.7.1", msg);
 		free(msg);
@@ -785,7 +792,7 @@ static int drop_privs(const char *usr, const char *grp)
 		return 0;
 
 	/* return if we're not root */
-	if (getuid() != 0) {
+	if (getuid()) {
 		mlog(LOG_ERR, "Unable to set UID or GID");
 		return -1;
 	}
@@ -798,7 +805,7 @@ static int drop_privs(const char *usr, const char *grp)
 			return -1;
 		}
 
-		if (setgid(gr->gr_gid) != 0) {
+		if (setgid(gr->gr_gid)) {
 			mlog(LOG_ERR, "Unable to setgid to %d",
 			     gr->gr_gid);
 			return -1;
@@ -813,7 +820,7 @@ static int drop_privs(const char *usr, const char *grp)
 			return -1;
 		}
 
-		if (setuid(pw->pw_uid) != 0) {
+		if (setuid(pw->pw_uid)) {
 			mlog(LOG_ERR, "Unable to setuid to %d",
 			     pw->pw_uid);
 			return -1;

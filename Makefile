@@ -1,6 +1,6 @@
 # $Id$
 
-WARN     = -Wall -Werror -Wstrict-prototypes
+WARN     = -Wall -Werror -Wpointer-arith -Wstrict-prototypes -O2
 LIBS     = -lmilter -lpthread
 PROGNAME = dnsbl-milter
 
@@ -17,7 +17,7 @@ main: dnsbl-milter.c
 install: dnsbl-milter
 	[[ -e "$(INSTPATH)/$(PROGNAME)" ]] && cp -af "$(INSTPATH)/$(PROGNAME)" "$(INSTPATH)/$(PROGNAME).bak" || true
 	install -m 755 -D $(PROGNAME) $(INSTPATH)/$(PROGNAME)
+	strip $(INSTPATH)/$(PROGNAME)
 
 clean:
 	[[ -e "$(PROGNAME)" ]] && rm -f $(PROGNAME)
-

@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+# ifndef S_SPLINT_S
 #include <syslog.h>
+# endif
 #include <time.h>
 #include <unistd.h>
 
@@ -79,7 +81,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX *);
 struct smfiDesc smfilter = {
 	"dnsbl-milter",		/* filter name */
 	SMFI_VERSION,		/* version code -- do not change */
-	SMFIF_ADDHDRS,		/* flags */
+	(unsigned long int) SMFIF_ADDHDRS,	/* flags */
 	mlfi_connect,		/* connection info filter */
 	NULL,			/* SMTP HELO command filter */
 	mlfi_envfrom,		/* envelope sender filter */
@@ -117,7 +119,6 @@ struct config {
 
 int main(int argc, char **argv)
 {
-	extern char *optarg;
 	const char *opts = "b:D:dg:ht:u:";
 #ifdef HAS_LONGOPT
 	static const struct option lopt[] = {
@@ -135,17 +136,16 @@ int main(int argc, char **argv)
 	char *p;
 	char *oconn;
 	int setconn;
-	int len;
+	size_t len;
 	int ret;
 	uint8_t daemon;
 	char *usr;
 	char *grp;
 	char *pidf = "/var/run/milter/dnsbl-milter.pid";
 
-	p = strrchr(argv[0], '/');
-	if (p == NULL)
-		config.pname = argv[0];
-	else
+	config.pname = argv[0];
+	p = strrchr(config.pname, '/');
+	if (p != NULL)
 		config.pname = p + 1;
 
 	if (argc < 2) {
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 		switch (c) {
 
 		case 'b':	/* bind address/socket */
-			if (setconn) {
+			if (setconn != 0) {
 				mlog(LOG_ERR,
 				     "Bind address/socket already provided, ignoring");
 				break;
@@ -257,7 +257,9 @@ int main(int argc, char **argv)
 		exit(EX_USAGE);
 	}
 
-	if (smfi_setconn(oconn) == MI_FAILURE) {
+	umask(0137);
+
+	if ((oconn == NULL) || (smfi_setconn(oconn) == MI_FAILURE)) {
 		mlog(LOG_ERR, "smfi_setconn() failed");
 		exit(EX_UNAVAILABLE);
 	}
@@ -271,15 +273,18 @@ int main(int argc, char **argv)
 	list_add(&blacklist, "bl.spamcop.net",
 		 "Listed on SpamCop. For more information, see http://spamcop.net/w3m?action=checkblock&ip=");
 	list_add(&blacklist, "zen.spamhaus.org",
-		 "Listed on Spamhaus. For more information, see http://www.spamhaus.org/query/bl?ip=");
+		 "Listed on The Spamhaus Project. For more information, see http://www.spamhaus.org/query/bl?ip=");
+	list_add(&blacklist, "psbl.surriel.com",
+		 "Listed on The Passive Spam Block List. For more information, see http://psbl.surriel.com/listing?ip=");
 
 	/* List of whitelists to use */
 	list_add(&whitelist, "list.dnswl.org", "http://www.dnswl.org");
 
-	if ((usr || grp) && drop_privs(usr, grp))
-		exit(EX_TEMPFAIL);
+	if ((usr != NULL) || (grp != NULL))
+		if (drop_privs(usr, grp) != 0)
+			exit(EX_TEMPFAIL);
 
-	if (daemon)
+	if (daemon != 0)
 		daemonize();
 
 	/* write pid file */
@@ -307,7 +312,7 @@ int main(int argc, char **argv)
 		oconn = NULL;
 	}
 
-	if (daemon)
+	if (daemon != 0)
 		closelog();
 
 	return ret;
@@ -346,7 +351,7 @@ static void mlog(const int priority, const char *fmt, ...)
 	va_start(ap, fmt);
 
 	/* if daemonize, then we log to syslog */
-	if (config.daemon)
+	if (config.daemon != 0)
 		vsyslog(priority, fmt, ap);
 
 	else {
@@ -493,7 +498,7 @@ sfsistat mlfi_data(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
 
-	if (priv->check)
+	if (priv->check != 0)
 		return mlfi_dnslcheck(ctx);
 
 	/* continue processing */
@@ -529,7 +534,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	uint8_t blisted;
 	struct listNode *wlp;
 	uint8_t wlisted;
-	int len;
+	size_t len;
 	char *msg;
 
 	uint8_t a = priv->hostaddr & 0x000000ff;
@@ -612,7 +617,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 			wlp = wlp->next;
 	}
 
-	if (wlisted) {
+	if (wlisted != 0) {
 		priv->stamp = STAMP_WHITELISTED;
 		return SMFIS_CONTINUE;
 	}
@@ -628,7 +633,10 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	} else {
 		snprintf(msg, len,
 			 "Client address [%u.%u.%u.%u] blocked. %s%u.%u.%u.%u",
-			 a, b, c, d, blp->msg, a, b, c, d);
+			 (unsigned int) a, (unsigned int) b,
+			 (unsigned int) c, (unsigned int) d, blp->msg,
+			 (unsigned int) a, (unsigned int) b,
+			 (unsigned int) c, (unsigned int) d);
 		smfi_setreply(ctx, "550", "5.7.1", msg);
 		free(msg);
 		msg = NULL;
@@ -641,7 +649,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,
 			const uint8_t d, const char *dnsl)
 {
-	int len;
+	size_t len;
 	char *name;
 	int err;
 	struct addrinfo *res = NULL;
@@ -655,7 +663,9 @@ static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,
 		return DNSL_FAIL;
 	}
 
-	snprintf(name, len, "%u.%u.%u.%u.%s.", d, c, b, a, dnsl);
+	snprintf(name, len, "%u.%u.%u.%u.%s.", (unsigned int) d,
+		 (unsigned int) c, (unsigned int) b, (unsigned int) a,
+		 dnsl);
 	err = getaddrinfo(name, NULL, NULL, &res);
 	free(name);
 	name = NULL;
@@ -758,7 +768,7 @@ static void daemonize(void)
 
 	config.daemon = 1;
 
-	openlog(config.pname, LOG_PID, LOG_MAIL);
+	openlog(config.pname, LOG_PID, LOG_LOCAL6);
 
 	i = fork();
 	if (i == -1)
@@ -792,20 +802,20 @@ static int drop_privs(const char *usr, const char *grp)
 		return 0;
 
 	/* return if we're not root */
-	if (getuid()) {
+	if (getuid() != 0) {
 		mlog(LOG_ERR, "Unable to set UID or GID");
 		return -1;
 	}
 
 	/* GID */
-	if (grp) {
+	if (grp != NULL) {
 		gr = getgrnam(grp);
 		if (gr == NULL) {
 			mlog(LOG_ERR, "Group \"%s\" not found", grp);
 			return -1;
 		}
 
-		if (setgid(gr->gr_gid)) {
+		if (setgid(gr->gr_gid) != 0) {
 			mlog(LOG_ERR, "Unable to setgid to %d",
 			     gr->gr_gid);
 			return -1;
@@ -813,14 +823,14 @@ static int drop_privs(const char *usr, const char *grp)
 	}
 
 	/* UID */
-	if (usr) {
+	if (usr != NULL) {
 		pw = getpwnam(usr);
 		if (pw == NULL) {
 			mlog(LOG_ERR, "User \"%s\" not found", usr);
 			return -1;
 		}
 
-		if (setuid(pw->pw_uid)) {
+		if (setuid(pw->pw_uid) != 0) {
 			mlog(LOG_ERR, "Unable to setuid to %d",
 			     pw->pw_uid);
 			return -1;

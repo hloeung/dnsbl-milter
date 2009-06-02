@@ -24,7 +24,7 @@
 	<ul>
 	<li>supports SMTP authentication - that is, users can bypass the blacklist listing by authenticating via SMTP AUTH<br /><br /></li>
 	<li>supports sender address verification or sender callbacks (see <a href="http://www.milter.info/sendmail/milter-sender">milter-sender</a>) - most SMTP callbacks are made using the null-envelope sender address. When we see this, we defer our blacklist checks until the SMTP DATA stage (or xxfi_data() callback in Sendmail 8.14.0+'s <a href="https://www.milter.org/developers/api/index">milter API</a>)<br /><br /></li>
-		<li>customizable blacklists (defaults are <a href="http://www.spamcop.net">SpamCop</a>, <a href="http://www.spamhaus.org">Spamhaus</a>, <a href="http://psbl.surriel.com">The Passive Spam Block List (PSBL)</a>, and <a href=http://www.barracudacentral.org/rbl">Barracuda Reputation Block List (BRBL)</a>) and whitelists (default is to use <a href="http://www.dnswl.org">DNSWL.org</a>) - we chose these blacklists and whitelists due to various documents online comparing some of the popular blacklists. See links provided in the "Links" section<br /><br /></li>
+		<li>customizable blacklists (defaults are <a href="http://www.spamcop.net">SpamCop</a>, <a href="http://www.spamhaus.org">Spamhaus</a>, <a href="http://psbl.surriel.com">The Passive Spam Block List (PSBL)</a>, and <a href="http://www.barracudacentral.org/rbl">Barracuda Reputation Block List (BRBL)</a>) and whitelists (default is to use <a href="http://www.dnswl.org">DNSWL.org</a>) - we chose these blacklists and whitelists due to various documents online comparing some of the popular blacklists. See links provided in the "Links" section<br /><br /></li>
 	<li>. . . and more. . .</li>
 	</ul>
 	<br />

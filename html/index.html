@@ -7,7 +7,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
 	<meta name="robots" content="index all, follow all" />
 	<meta name="description" content="Sendmail DNSBL milter (mail filter) used to consult a list of DNS blacklists and whitelists to determine if messages from particular hosts should be accepted" />
-	<meta name="keywords" content="sendmail 8.14 milter mail email e-mail filter api dns domain name system dnsbl blacklist blacklisting blocklist dnswl whitelist whitelisting anti-spam spam spamhaus spamhaus.org spamcop spamcop.net dnswl.org smtp reject" />
+	<meta name="keywords" content="sendmail 8.14 milter mail email e-mail filter api dns domain name system dnsbl blacklist blacklisting blocklist dnswl whitelist whitelisting anti-spam spam spamhaus spamhaus.org spamcop spamcop.net dnswl.org smtp reject psbl passive spam block list brbl barracuda reputation" />
 	<meta name="verify-v1" content="mEGQ/fHqcGHcmzRuKpACjEy7hTgp4nTGHYMP263jsWI=" />
 
 	<title>dnsbl-milter - Sendmail DNSBL &amp; DNSWL milter. Simple anti-spam solution for e-mail service providers</title>
@@ -24,7 +24,7 @@
 	<ul>
 	<li>supports SMTP authentication - that is, users can bypass the blacklist listing by authenticating via SMTP AUTH<br /><br /></li>
 	<li>supports sender address verification or sender callbacks (see <a href="http://www.milter.info/sendmail/milter-sender">milter-sender</a>) - most SMTP callbacks are made using the null-envelope sender address. When we see this, we defer our blacklist checks until the SMTP DATA stage (or xxfi_data() callback in Sendmail 8.14.0+'s <a href="https://www.milter.org/developers/api/index">milter API</a>)<br /><br /></li>
-	<li>customizable blacklists (defaults are <a href="http://www.spamcop.net">SpamCop</a> and <a href="http://www.spamhaus.org">Spamhaus</a>) and whitelists (default is to use <a href="http://www.dnswl.org">DNSWL.org</a>) - we chose these blacklists and whitelists due to various documents online comparing some of the popular blacklists. See links provided in the "Links" section<br /><br /></li>
+		<li>customizable blacklists (defaults are <a href="http://www.spamcop.net">SpamCop</a>, <a href="http://www.spamhaus.org">Spamhaus</a>, <a href="http://psbl.surriel.com">The Passive Spam Block List (PSBL)</a>, and <a href=http://www.barracudacentral.org/rbl">Barracuda Reputation Block List (BRBL)</a>) and whitelists (default is to use <a href="http://www.dnswl.org">DNSWL.org</a>) - we chose these blacklists and whitelists due to various documents online comparing some of the popular blacklists. See links provided in the "Links" section<br /><br /></li>
 	<li>. . . and more. . .</li>
 	</ul>
 	<br />
@@ -51,7 +51,7 @@ So why choose dnsbl-milter over Sendmail's builtin <a href="http://www.sendmail.
 	<br />
 
 	<h2><a name="Download"><b>L</b>atest stable release</a></h2>
-	<a href="http://prdownloads.sourceforge.net/dnsbl-milter/dnsbl-milter-1.0.tar.gz">1.0</a> (for Sendmail 8.14.0+)<br />
+	<a href="http://prdownloads.sourceforge.net/dnsbl-milter/dnsbl-milter-1.1.tar.gz">1.1</a> (for Sendmail 8.14.0+)<br />
 	<a href="http://prdownloads.sourceforge.net/dnsbl-milter/dnsbl-milter-1.0.pre-Sendmail.8.14.tar.gz">1.0</a> (pre Sendmail 8.14.0)<br />
 	<br />
 	<a href="http://sourceforge.net/project/showfiles.php?group_id=210782">Other releases</a><br />
@@ -60,6 +60,7 @@ So why choose dnsbl-milter over Sendmail's builtin <a href="http://www.sendmail.
 
 	<h2><a name="Source"><b>S</b>ource code access</a></h2>
 	<a href="http://dnsbl-milter.svn.sourceforge.net/viewvc/dnsbl-milter">Subversion SVN</a><br />
+	<a href="http://dnsbl-milter.git.sourceforge.net/git/gitweb.cgi?p=dnsbl-milter">Git</a><br />
 	<br />
 	<br />
 

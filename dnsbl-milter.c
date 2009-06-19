@@ -105,10 +105,14 @@ struct smfiDesc smfilter = {
 	mlfi_eom,		/* end of message */
 	mlfi_abort,		/* message aborted */
 	mlfi_close,		/* connection cleanup */
+#if SMFI_VERSION > 2
 	NULL,			/* unknown SMTP commands */
+#endif /* SMFI_VERSION > 2 */
+#if SMFI_VERSION > 3
 	mlfi_data,		/* DATA command */
 	NULL,			/* Once, at the start of each SMTP
 				   connection */
+#endif /* SMFI_VERSION > 3 */
 };
 
 static void usage(const char *);

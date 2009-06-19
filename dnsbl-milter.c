@@ -107,12 +107,12 @@ struct smfiDesc smfilter = {
 	mlfi_close,		/* connection cleanup */
 #if SMFI_VERSION > 2
 	NULL,			/* unknown SMTP commands */
-#endif /* SMFI_VERSION > 2 */
+#endif				/* SMFI_VERSION > 2 */
 #if SMFI_VERSION > 3
 	mlfi_data,		/* DATA command */
 	NULL,			/* Once, at the start of each SMTP
 				   connection */
-#endif /* SMFI_VERSION > 3 */
+#endif				/* SMFI_VERSION > 3 */
 };
 
 static void usage(const char *);
@@ -288,13 +288,13 @@ int main(int argc, char **argv)
 
 	/* List of blacklists to use */
 	list_add(&blacklist, "bl.spamcop.net",
-		 "Listed on SpamCop. For more information, see http://spamcop.net/w3m?action=checkblock&ip=");
+		 "Listed on SpamCop. See http://spamcop.net/w3m?action=checkblock&ip=");
 	list_add(&blacklist, "b.barracudacentral.org",
-		 "Listed on Barracuda Reputation Block List (BRBL). For more information, see http://www.barracudacentral.org/lookups?ip_address=");
+		 "Listed on Barracuda Reputation Block List (BRBL). See http://www.barracudacentral.org/lookups?ip_address=");
 	list_add(&blacklist, "zen.spamhaus.org",
-		 "Listed on The Spamhaus Project. For more information, see http://www.spamhaus.org/query/bl?ip=");
+		 "Listed on The Spamhaus Project. See http://www.spamhaus.org/query/bl?ip=");
 	list_add(&blacklist, "psbl.surriel.com",
-		 "Listed on The Passive Spam Block List. For more information, see http://psbl.surriel.com/listing?ip=");
+		 "Listed on The Passive Spam Block List. See http://psbl.surriel.com/listing?ip=");
 
 	/* List of whitelists to use */
 	list_add(&whitelist, "list.dnswl.org", "http://www.dnswl.org");
@@ -356,7 +356,8 @@ Usage: %s -b [bind address/socket] [-dh] [-D [debug level]]\n\
 \n\
     -h              This help screen\n");
 
-	printf("\nReport bugs to Haw Loeung <hloeung@users.sourceforge.net>\n\
+	printf
+	    ("\nReport bugs to Haw Loeung <hloeung@users.sourceforge.net>\n\
 $Id$\n");
 
 }

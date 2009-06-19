@@ -377,7 +377,8 @@ static void mlog(const int priority, const char *fmt, ...)
 
 	else {
 		t = time(NULL);
-		strftime(tbuf, sizeof(tbuf), "%b %e %T", localtime_r(&t, &tm));
+		strftime(tbuf, sizeof(tbuf), "%b %e %T",
+			 localtime_r(&t, &tm));
 		fprintf(stderr, "%.15s ", tbuf);
 		vfprintf(stderr, fmt, ap);
 		fprintf(stderr, "\n");

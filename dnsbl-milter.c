@@ -28,10 +28,10 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <grp.h>
+#include <inttypes.h>
 #include <netdb.h>
 #include <pwd.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

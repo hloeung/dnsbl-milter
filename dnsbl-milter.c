@@ -419,7 +419,7 @@ sfsistat mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 
 	/* store hostaddr */
 	phostaddr = (struct sockaddr_in *) hostaddr;
-	priv->hostaddr = phostaddr->sin_addr.s_addr;
+	priv->hostaddr = htonl(phostaddr->sin_addr.s_addr);
 
 	/* continue processing */
 	return SMFIS_CONTINUE;
@@ -557,10 +557,10 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	size_t len;
 	char *msg;
 
-	uint8_t a = priv->hostaddr & 0x000000ff;
-	uint8_t b = (priv->hostaddr & 0x0000ff00) >> 8;
-	uint8_t c = (priv->hostaddr & 0x00ff0000) >> 16;
-	uint8_t d = (priv->hostaddr & 0xff000000) >> 24;
+	uint8_t a = (priv->hostaddr & 0xff000000) >> 24;
+	uint8_t b = (priv->hostaddr & 0x00ff0000) >> 16;
+	uint8_t c = (priv->hostaddr & 0x0000ff00) >> 8;
+	uint8_t d = (priv->hostaddr & 0x000000ff);
 
 	switch (a) {
 

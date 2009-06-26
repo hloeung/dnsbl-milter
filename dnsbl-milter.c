@@ -87,7 +87,9 @@ sfsistat mlfi_envfrom(SMFICTX *, char **);
 sfsistat mlfi_eom(SMFICTX *);
 sfsistat mlfi_abort(SMFICTX *);
 sfsistat mlfi_close(SMFICTX *);
+#if SMFI_VERSION > 3
 sfsistat mlfi_data(SMFICTX *);
+#endif
 static sfsistat mlfi_cleanup(SMFICTX *);
 static sfsistat mlfi_dnslcheck(SMFICTX *);
 
@@ -454,6 +456,7 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 		return SMFIS_TEMPFAIL;
 	}
 
+#if SMFI_VERSION > 3
 	/* null-envelope sender address, defer DNS checks till mlfi_data() */
 	if (strncmp(argv[0], "<>\0", 3) == 0) {
 #ifdef DEBUG
@@ -464,6 +467,7 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 		priv->check = 1;
 		return SMFIS_CONTINUE;
 	}
+#endif
 
 	priv->check = 0;
 	return mlfi_dnslcheck(ctx);
@@ -517,6 +521,7 @@ sfsistat mlfi_close(SMFICTX * ctx)
 	return SMFIS_CONTINUE;
 }
 
+#if SMFI_VERSION > 3
 sfsistat mlfi_data(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
@@ -527,6 +532,7 @@ sfsistat mlfi_data(SMFICTX * ctx)
 	/* continue processing */
 	return SMFIS_CONTINUE;
 }
+#endif
 
 static sfsistat mlfi_cleanup(SMFICTX * ctx)
 {

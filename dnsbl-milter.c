@@ -442,18 +442,27 @@ sfsistat mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
+	char *msgid;
 
 	/* SMTP Authenticated. Skip DNS blacklist checks */
 	if (smfi_getsymval(ctx, "{auth_type}") != NULL)
 		return SMFIS_ACCEPT;
 
 	/* store message ID */
-	priv->msgid = strdup(smfi_getsymval(ctx, "{i}"));
-	if (priv->msgid == NULL) {
-		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
-		     priv->connectfrom, "mlfi_envfrom()");
-		mlfi_cleanup(ctx);
-		return SMFIS_TEMPFAIL;
+	msgid = smfi_getsymval(ctx, "{i}");
+	if (msgid != NULL) {
+		priv->msgid = strdup(msgid);
+		if (priv->msgid == NULL) {
+			mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+			     priv->connectfrom, "mlfi_envfrom()");
+			mlfi_cleanup(ctx);
+			return SMFIS_TEMPFAIL;
+		}
+	}
+
+	else {
+		/* TODO: Replace with code to generate Sendmail msgid */
+		priv->msgid = strdup(priv->connectfrom);
 	}
 
 	/* store sender's address */

@@ -135,11 +135,12 @@ static void pidf_destroy(const char *);
 struct config {
 	char *pname;
 	uint8_t daemon;
+	uint8_t stamp;
 } config;
 
 int main(int argc, char **argv)
 {
-	const char *opts = "b:D:dg:ht:u:";
+	const char *opts = "b:D:dg:hst:u:";
 #ifdef HAS_LONGOPT
 	static const struct option lopt[] = {
 		{"bind", 1, 0, 'b'},
@@ -147,6 +148,7 @@ int main(int argc, char **argv)
 		{"daemonize", 0, 0, 'd'},
 		{"group", 1, 0, 'g'},
 		{"help", 0, 0, 'h'},
+		{"no-stamp", 0, 0, 's'},
 		{"timeout", 1, 0, 't'},
 		{"user", 1, 0, 'u'},
 		{NULL, 0, 0, 0}
@@ -178,6 +180,7 @@ int main(int argc, char **argv)
 	config.daemon = 0;
 	daemon = 0;
 	usr = grp = NULL;
+	config.stamp = 1;
 
 	while ((c = getopt_long(argc, argv, opts, lopt, NULL)) != -1) {
 
@@ -241,6 +244,10 @@ int main(int argc, char **argv)
 			}
 
 			grp = optarg;
+			break;
+
+		case 's':
+			config.stamp = 0;
 			break;
 
 		case 't':
@@ -477,6 +484,9 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 sfsistat mlfi_eom(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
+
+	if (config.stamp == 0)
+		return mlfi_cleanup(ctx);
 
 	switch (priv->stamp) {
 	case STAMP_PASSED:

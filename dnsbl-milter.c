@@ -32,6 +32,7 @@
 #include <inttypes.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <resolv.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

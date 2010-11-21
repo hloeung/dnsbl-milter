@@ -499,7 +499,6 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 sfsistat mlfi_eoh(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
-
 	char *msgid;
 
 	/* In Postfix, the Sendmail macro 'i' is only available in the DATA,
@@ -595,7 +594,7 @@ sfsistat mlfi_data(SMFICTX * ctx)
 		}
 	}
 
-	check:
+check:
 	if (priv->check != 0)
 		return mlfi_dnslcheck(ctx);
 

@@ -87,6 +87,7 @@ struct mlfiPriv {
 sfsistat mlfi_connect(SMFICTX *, char *, _SOCK_ADDR *);
 sfsistat mlfi_envfrom(SMFICTX *, char **);
 sfsistat mlfi_eom(SMFICTX *);
+sfsistat mlfi_eoh(SMFICTX *);
 sfsistat mlfi_abort(SMFICTX *);
 sfsistat mlfi_close(SMFICTX *);
 #if SMFI_VERSION > 3
@@ -104,7 +105,11 @@ struct smfiDesc smfilter = {
 	mlfi_envfrom,		/* envelope sender filter */
 	NULL,			/* envelope recipient filter */
 	NULL,			/* header filter */
+#if SMFI_VERSION > 3
 	NULL,			/* end of header */
+#else
+	mlfi_eoh,		/* end of header */
+#endif
 	NULL,			/* body block filter */
 	mlfi_eom,		/* end of message */
 	mlfi_abort,		/* message aborted */
@@ -460,16 +465,15 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 		}
 	}
 
-	else {
-		/* TODO: Replace with code to generate Sendmail msgid */
-		priv->msgid = strdup(priv->connectfrom);
-	}
+	else
+		priv->msgid = NULL;
 
 	/* store sender's address */
 	priv->envfrom = strdup(argv[0]);
 	if (priv->envfrom == NULL) {
 		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
-		     priv->msgid, "mlfi_envfrom()");
+		     (priv->msgid != NULL)? priv->msgid : priv->connectfrom,
+		     "mlfi_envfrom()");
 		mlfi_cleanup(ctx);
 		return SMFIS_TEMPFAIL;
 	}
@@ -480,7 +484,7 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 #ifdef DEBUG
 		mlog(LOG_DEBUG,
 		     "%s: Null-envelope sender address, deferring",
-		     priv->msgid);
+		     (priv->msgid != NULL)? priv->msgid : priv->connectfrom);
 #endif
 		priv->check = 1;
 		return SMFIS_CONTINUE;
@@ -490,6 +494,33 @@ sfsistat mlfi_envfrom(SMFICTX * ctx, char **argv)
 	priv->check = 0;
 	return mlfi_dnslcheck(ctx);
 }
+
+#if SMFI_VERSION <= 3
+sfsistat mlfi_eoh(SMFICTX * ctx)
+{
+	struct mlfiPriv *priv = GETCONTEXT(ctx);
+
+	char *msgid;
+
+	/* In Postfix, the Sendmail macro 'i' is only available in the DATA,
+	   EOH, and EOM milter protocol stages so we try get the msgid again */
+	if (priv->msgid != NULL)
+		return SMFIS_CONTINUE;
+
+	msgid = smfi_getsymval(ctx, "{i}");
+	if (msgid != NULL) {
+		priv->msgid = strdup(msgid);
+		if (priv->msgid == NULL) {
+			mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+			     priv->connectfrom, "mlfi_data()");
+			mlfi_cleanup(ctx);
+			return SMFIS_TEMPFAIL;
+		}
+	}
+
+	return SMFIS_CONTINUE;
+}
+#endif
 
 sfsistat mlfi_eom(SMFICTX * ctx)
 {
@@ -546,7 +577,25 @@ sfsistat mlfi_close(SMFICTX * ctx)
 sfsistat mlfi_data(SMFICTX * ctx)
 {
 	struct mlfiPriv *priv = GETCONTEXT(ctx);
+	char *msgid;
 
+	/* In Postfix, the Sendmail macro 'i' is only available in the DATA,
+	   EOH, and EOM milter protocol stages so we try get the msgid again */
+	if (priv->msgid != NULL)
+		goto check;
+
+	msgid = smfi_getsymval(ctx, "{i}");
+	if (msgid != NULL) {
+		priv->msgid = strdup(msgid);
+		if (priv->msgid == NULL) {
+			mlog(LOG_ERR, "%s: %s: Memory allocation failed",
+			     priv->connectfrom, "mlfi_data()");
+			mlfi_cleanup(ctx);
+			return SMFIS_TEMPFAIL;
+		}
+	}
+
+	check:
 	if (priv->check != 0)
 		return mlfi_dnslcheck(ctx);
 
@@ -630,14 +679,16 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	while ((blp != NULL) && (blisted == 0)) {
 #ifdef DEBUG
 		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
-		     priv->msgid, d, c, b, a, blp->dnsl);
+		     (priv->msgid != NULL)? priv->msgid : priv->connectfrom,
+		     d, c, b, a, blp->dnsl);
 #endif
 
 		if (dns_check(a, b, c, d, blp->dnsl) == DNSL_EXIST) {
 			mlog(LOG_INFO,
 			     "%s: %s [%u.%u.%u.%u] is blacklisted on %s",
-			     priv->msgid, priv->connectfrom, a, b, c, d,
-			     blp->dnsl);
+			     (priv->msgid != NULL)? priv->msgid
+			     : priv->connectfrom, priv->connectfrom,
+			     a, b, c, d, blp->dnsl);
 			blisted = 1;
 		} else
 			blp = blp->next;
@@ -654,14 +705,16 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	while ((wlp != NULL) && (wlisted == 0)) {
 #ifdef DEBUG
 		mlog(LOG_DEBUG, "%s: Looking up %u.%u.%u.%u.%s.",
-		     priv->msgid, d, c, b, a, wlp->dnsl);
+		     (priv->msgid != NULL)? priv->msgid : priv->connectfrom,
+		     d, c, b, a, wlp->dnsl);
 #endif
 
 		if (dns_check(a, b, c, d, wlp->dnsl) == DNSL_EXIST) {
 			mlog(LOG_INFO,
 			     "%s: %s [%u.%u.%u.%u] is whitelisted on %s",
-			     priv->msgid, priv->connectfrom, a, b, c, d,
-			     wlp->dnsl);
+			     (priv->msgid != NULL)? priv->msgid
+			     : priv->connectfrom, priv->connectfrom,
+			     a, b, c, d, wlp->dnsl);
 			wlisted = 1;
 		} else
 			wlp = wlp->next;
@@ -678,7 +731,8 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	msg = malloc(len);
 	if (msg == NULL) {
 		mlog(LOG_ERR, "%s: %s: Memory allocation failed",
-		     priv->msgid, "mlfi_dnslcheck()");
+		     (priv->msgid != NULL)? priv->msgid : priv->connectfrom,
+		     "mlfi_dnslcheck()");
 		smfi_setreply(ctx, "550", "5.7.1", blp->msg);
 	} else {
 		snprintf(msg, len,

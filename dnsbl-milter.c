@@ -369,6 +369,7 @@ Usage: %s -b [bind address/socket] [-dh] [-D [debug level]]\n\
                     connection before timing out a socket. (default: 7210)\n\
     -u user         Run as user \"user\"\n\
     -g group        Run as group \"group\"\n\
+    -s              Do not stamp messages with X-DNSBL-MILTER header\n\
 \n\
     -h              This help screen\n");
 

@@ -362,7 +362,7 @@ int main(int argc, char **argv)
 static void usage(const char *prog)
 {
 	printf("\
-Usage: %s -b [bind address/socket] [-dh] [-D [debug level]]\n\
+Usage: %s -b [bind address/socket] [-dHh] [-D [debug level]]\n\
        [-t [milter timeout in seconds] [-u [user]] [-g [group]] \n", prog);
 
 	printf("\n\
@@ -376,6 +376,8 @@ Usage: %s -b [bind address/socket] [-dh] [-D [debug level]]\n\
     -u user         Run as user \"user\"\n\
     -g group        Run as group \"group\"\n\
     -s              Do not stamp messages with X-DNSBL-MILTER header\n\
+    -H              Don't reject mail, just add header:\n\
+                            X-DNSBL-MILTER: Blacklisted\n\
 \n\
     -h              This help screen\n");
 

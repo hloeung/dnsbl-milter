@@ -22,13 +22,13 @@ PROGNAME = dnsbl-milter
 
 INSTPATH = /usr/local/sbin/
 
-INCDIRS  = /usr/include/libmilter/
-LIBDIRS  = /usr/lib/
+INCDIRS  = -I/usr/include/libmilter/
+LIBDIRS  = -L/usr/lib/ -L/usr/lib/libmilter/
 
 default all: main
 
 main: dnsbl-milter.c
-	$(CC) $(WARN) $(CFLAGS) -D_REENTRANT dnsbl-milter.c -o $(PROGNAME) $(LIBS) -I $(INCDIRS) -L $(LIBDIRS)
+	$(CC) $(WARN) $(CFLAGS) -D_REENTRANT dnsbl-milter.c -o $(PROGNAME) $(LIBS) $(INCDIRS) $(LIBDIRS)
 
 install: dnsbl-milter
 	[[ -e "$(INSTPATH)/$(PROGNAME)" ]] && cp -af "$(INSTPATH)/$(PROGNAME)" "$(INSTPATH)/$(PROGNAME).bak" || true

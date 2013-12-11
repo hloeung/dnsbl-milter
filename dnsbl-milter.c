@@ -753,7 +753,7 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 	}
 
 	if(config.drymode) {
-		smfi_addheader(ctx, "X-DNSBL-Milter", "blacklisted");
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Blacklisted");
 		mlfi_cleanup(ctx);
 		return SMFIS_ACCEPT;
 	} else {

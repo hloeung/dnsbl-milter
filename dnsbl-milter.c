@@ -140,16 +140,18 @@ static void pidf_destroy(const char *);
 
 struct config {
 	char *pname;
+	uint8_t drymode;
 	uint8_t daemon;
 	uint8_t stamp;
 } config;
 
 int main(int argc, char **argv)
 {
-	const char *opts = "b:D:dg:hst:u:";
+	const char *opts = "b:D:dg:hst:u:H";
 #ifdef HAS_LONGOPT
 	static const struct option lopt[] = {
 		{"bind", 1, 0, 'b'},
+		{"dry", 0, 0, 'H'},
 		{"debug", 1, 0, 'D'},
 		{"daemonize", 0, 0, 'd'},
 		{"group", 1, 0, 'g'},
@@ -225,6 +227,10 @@ int main(int argc, char **argv)
 
 			snprintf(oconn, len, "unix:%s", optarg);
 			setconn = 2;
+			break;
+
+		case 'H':
+			config.drymode = 1;	// Adds a header instead of rejecting
 			break;
 
 		case 'D':
@@ -746,8 +752,14 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 		msg = NULL;
 	}
 
-	mlfi_cleanup(ctx);
-	return SMFIS_REJECT;
+	if(config.drymode) {
+		smfi_addheader(ctx, "X-DNSBL-Milter", "blacklisted");
+		mlfi_cleanup(ctx);
+		return SMFIS_ACCEPT;
+	} else {
+		mlfi_cleanup(ctx);
+		return SMFIS_REJECT;
+	}
 }
 
 static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,

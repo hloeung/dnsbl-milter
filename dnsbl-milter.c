@@ -73,6 +73,7 @@ static int list_free(struct listNode **);
 #define STAMP_PASSED      0
 #define STAMP_WHITELISTED 1
 #define STAMP_SKIPPED     2
+#define STAMP_BLACKLISTED 3
 typedef uint8_t stamp_t;
 
 struct mlfiPriv {
@@ -539,16 +540,19 @@ sfsistat mlfi_eom(SMFICTX * ctx)
 
 	switch (priv->stamp) {
 	case STAMP_PASSED:
-		smfi_insheader(ctx, 0, "X-DNSBL-MILTER", "Passed");
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Passed");
 		break;
 	case STAMP_WHITELISTED:
-		smfi_insheader(ctx, 0, "X-DNSBL-MILTER", "Whitelisted");
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Whitelisted");
 		break;
 	case STAMP_SKIPPED:
-		smfi_insheader(ctx, 0, "X-DNSBL-MILTER", "Skipped");
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Skipped");
+		break;
+	case STAMP_BLACKLISTED:
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Blacklisted");
 		break;
 	default:
-		smfi_insheader(ctx, 0, "X-DNSBL-MILTER", "Unknown error");
+		smfi_addheader(ctx, "X-DNSBL-MILTER", "Unknown error");
 		break;
 	}
 
@@ -733,6 +737,10 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 		return SMFIS_CONTINUE;
 	}
 
+	priv->stamp = STAMP_BLACKLISTED;
+	if(config.drymode)
+		return SMFIS_CONTINUE;
+
 	/* "Client address [aaa.bbb.ccc.ddd] blocked. " + msg + "aaa.bbb.ccc.ddd"
 	   + '\0' */
 	len = 43 + strlen(blp->msg) + 15 + 1;
@@ -754,14 +762,8 @@ static sfsistat mlfi_dnslcheck(SMFICTX * ctx)
 		msg = NULL;
 	}
 
-	if(config.drymode) {
-		smfi_addheader(ctx, "X-DNSBL-MILTER", "Blacklisted");
-		mlfi_cleanup(ctx);
-		return SMFIS_ACCEPT;
-	} else {
-		mlfi_cleanup(ctx);
-		return SMFIS_REJECT;
-	}
+	mlfi_cleanup(ctx);
+	return SMFIS_REJECT;
 }
 
 static dnsl_t dns_check(const uint8_t a, const uint8_t b, const uint8_t c,

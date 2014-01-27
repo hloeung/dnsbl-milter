@@ -31,9 +31,11 @@ main: dnsbl-milter.c
 	$(CC) $(WARN) $(CFLAGS) -D_REENTRANT dnsbl-milter.c -o $(PROGNAME) $(LIBS) $(INCDIRS) $(LIBDIRS)
 
 install: dnsbl-milter
-	[[ -e "$(INSTPATH)/$(PROGNAME)" ]] && cp -af "$(INSTPATH)/$(PROGNAME)" "$(INSTPATH)/$(PROGNAME).bak" || true
+	if [ -f "$(INSTPATH)/$(PROGNAME)" ]; then \
+		cp -af "$(INSTPATH)/$(PROGNAME)" "$(INSTPATH)/$(PROGNAME).bak"; \
+	fi
 	install -m 755 -D $(PROGNAME) $(INSTPATH)/$(PROGNAME)
 	strip $(INSTPATH)/$(PROGNAME)
 
 clean:
-	[[ -e "$(PROGNAME)" ]] && rm -f $(PROGNAME)
+	if [ -f $(PROGNAME) ]; then rm -f $(PROGNAME); fi

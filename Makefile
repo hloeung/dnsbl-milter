@@ -1,6 +1,6 @@
 # $Id$
 #
-# Copyright 2007, 2008, 2009 Haw Loeung <hloeung@users.sourceforge.net>
+# Copyright (C) 2007-2014 Haw Loeung <h.loeung@unixque.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,10 +27,10 @@ LIBDIRS  = -L/usr/lib/ -L/usr/lib/libmilter/
 
 default all: main
 
-main: dnsbl-milter.c
-	$(CC) $(WARN) $(CFLAGS) -D_REENTRANT dnsbl-milter.c -o $(PROGNAME) $(LIBS) $(INCDIRS) $(LIBDIRS)
+main: $(PROGNAME).c
+	$(CC) $(WARN) $(CFLAGS) -D_REENTRANT $(PROGNAME).c -o $(PROGNAME) $(LIBS) $(INCDIRS) $(LIBDIRS)
 
-install: dnsbl-milter
+install: $(PROGNAME)
 	if [ -f "$(INSTPATH)/$(PROGNAME)" ]; then \
 		cp -af "$(INSTPATH)/$(PROGNAME)" "$(INSTPATH)/$(PROGNAME).bak"; \
 	fi

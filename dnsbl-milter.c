@@ -905,6 +905,8 @@ static void daemonize(void)
 
 	/* handle stdin, stdout, and stderr */
 	i = open("/dev/null", O_RDWR);
+	if (i < 0)
+		exit(EX_UNAVAILABLE);
 	if (dup(i) == -1)
 		exit(EX_UNAVAILABLE);
 	if (dup(i) == -1)
